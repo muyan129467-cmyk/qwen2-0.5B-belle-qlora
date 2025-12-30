@@ -18,7 +18,7 @@ else
 fi
 echo "CUDA Version detected: $CUDA_VERSION"
 
-# 安装torch及相关库（修复：兼容 RTX 4090 / CUDA 12.x）
+# 安装torch及相关库（兼容 RTX 4090 / CUDA 12.x）
 if [[ "$CUDA_VERSION" == "11.8" ]]; then
     pip3 install torch==2.1.2 torchvision==0.16.2 torchaudio==2.1.2 \
       --index-url https://download.pytorch.org/whl/cu118
@@ -33,7 +33,7 @@ else
       --index-url https://download.pytorch.org/whl/cu118
 fi
 
-# 安装bitsandbytes（修复：使用预编译 CUDA 12+ wheel，兼容 RTX 4090）
+# 安装bitsandbytes（使用预编译 CUDA 12+ wheel，兼容 RTX 4090）
 pip3 install https://github.com/jllllll/bitsandbytes-windows-webui/releases/download/wheels/bitsandbytes-0.42.0-py3-none-linux_x86_64.whl
 
 # 安装其他依赖
@@ -42,7 +42,7 @@ pip3 install transformers==4.38.0 accelerate==0.27.0 peft==0.9.0 \
   einops==0.7.0 tqdm==4.66.1 scipy==1.11.4 numpy==1.24.4 \
   huggingface-hub==0.20.3 safetensors==0.4.2
 
-# 默认 accelerate 配置（可选）
+# 默认 accelerate 配置
 accelerate config default
 
 echo "=== 验证安装 ==="
