@@ -20,7 +20,7 @@ from tqdm import tqdm
 
 
 # =====================================================
-# Dataset（保持不变）
+# Dataset
 # =====================================================
 
 class BelleEvalDataset(Dataset):
@@ -121,7 +121,7 @@ class BelleEvalDataset(Dataset):
 
 
 # =====================================================
-# Collator（修改：增加空 batch 安全处理）
+# Collator
 # =====================================================
 
 class EvalCollator:
@@ -165,7 +165,7 @@ class EvalCollator:
 
 
 # =====================================================
-# Evaluation（保持不变）
+# Evaluation
 # =====================================================
 
 @torch.no_grad()
@@ -194,7 +194,7 @@ def evaluate(model, dataloader, device):
 
 
 # =====================================================
-# Main —— 修复QLoRA加载逻辑
+# Main
 # =====================================================
 
 def main():
@@ -223,7 +223,6 @@ def main():
 
         peft_config = PeftConfig.from_pretrained(args.model_path)
 
-        # ========== 修复后的QLoRA加载逻辑 ==========
         quantization_config = None
         if args.use_qlora:
             print(f"[INFO] Loading QLoRA (4-bit) model")
