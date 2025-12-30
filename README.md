@@ -3,4 +3,10 @@
 数据集放在百度网盘中，包含训练数据集（train_conversations.jsonl）和验证数据集（eval_conversations.jsonl）
 data 链接: https://pan.baidu.com/s/1hKOlCd21DJgDbQ2QAM-GOQ?pwd=2f4v 提取码: 2f4v
 
-训练环境文件：install.sh
+实验环境文件：install.sh
+微调训练代码：train_sft.py
+验证评估代码：eval_sft.py
+
+训练日志：
+验证日志：
+训练输出模型：output/
