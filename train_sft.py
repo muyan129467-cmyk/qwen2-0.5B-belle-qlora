@@ -71,7 +71,7 @@ class DataArguments:
 
 
 # =====================================================
-# Dataset - 返回列表格式，不是张量（保持不变）
+# Dataset
 # =====================================================
 
 class BelleSFTDataset(Dataset):
@@ -117,7 +117,6 @@ class BelleSFTDataset(Dataset):
             if len(messages) < 2 or messages[-1]["role"] != "assistant":
                 return None
 
-            # ========== 修正的关键部分 ==========
             # 1. 分别获取prefix和full的文本
             prefix_messages = messages[:-1]
             prefix_text = self.tokenizer.apply_chat_template(
@@ -168,13 +167,12 @@ class BelleSFTDataset(Dataset):
             if assistant_len < self.min_assistant_tokens:
                 return None
 
-            # 7. ========== 修复的关键部分 ==========
             # 构建labels：排除assistant回复中的<|im_end|>等特殊token
             labels = input_ids.copy()
             labels[:assistant_start] = [-100] * assistant_start
 
             # 找到assistant部分中的<|im_end|>（eos_token）位置
-            eos_token_id = self.tokenizer.eos_token_id  # Qwen2是151645
+            eos_token_id = self.tokenizer.eos_token_id
 
             # 在assistant部分中查找eos_token
             for i in range(assistant_start, len(input_ids)):
@@ -197,7 +195,7 @@ class BelleSFTDataset(Dataset):
 
 
 # =====================================================
-# Data Collator - 手动处理padding（保持不变）
+# Data Collator - 手动处理padding
 # =====================================================
 
 class SFTDataCollator:
@@ -253,11 +251,10 @@ class SFTDataCollator:
 
 
 # =====================================================
-# Model / Tokenizer - 修改以支持LoRA/QLoRA
+# Model / Tokenizer
 # =====================================================
 
 def load_model_and_tokenizer(model_name: str, torch_dtype: Optional[str], **kwargs):
-    """修改：添加kwargs参数以接收LoRA相关参数"""
     tokenizer = AutoTokenizer.from_pretrained(
         model_name,
         trust_remote_code=True,
@@ -305,11 +302,10 @@ def load_model_and_tokenizer(model_name: str, torch_dtype: Optional[str], **kwar
             model_name,
             trust_remote_code=True,
             quantization_config=quantization_config,
-            device_map={"": 0},  # 修复：单卡A10明确指定
+            device_map={"": 0},  # 单卡A10明确指定
             torch_dtype=compute_dtype,
         )
 
-        # ========== 修复：先准备模型，再应用LoRA ==========
         # 为k-bit训练准备模型
         model = prepare_model_for_kbit_training(model)
 
@@ -356,7 +352,6 @@ def load_model_and_tokenizer(model_name: str, torch_dtype: Optional[str], **kwar
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
 
-        # ========== 修复的关键部分 ==========
         # 验证LoRA是否正确应用
         trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
         total_params = sum(p.numel() for p in model.parameters())
@@ -380,7 +375,7 @@ def load_model_and_tokenizer(model_name: str, torch_dtype: Optional[str], **kwar
 
 
 # =====================================================
-# Main - 修改以传递LoRA参数
+# Main
 # =====================================================
 
 def main():
@@ -391,7 +386,7 @@ def main():
     logger.info(f"Data arguments: {data_args}")
     logger.info(f"Model arguments: {model_args}")
 
-    # 修改：传递LoRA相关参数
+    # 传递LoRA相关参数
     model, tokenizer = load_model_and_tokenizer(
         model_args.model_name_or_path,
         model_args.torch_dtype or "bfloat16",
@@ -404,7 +399,6 @@ def main():
         q_lora_4bit_compute_dtype=model_args.q_lora_4bit_compute_dtype,
     )
 
-    # 原有逻辑保持不变
     if training_args.gradient_checkpointing:
         model.gradient_checkpointing_enable()
         logger.info("Gradient checkpointing enabled")
@@ -442,7 +436,7 @@ def main():
 
     train_result = trainer.train()
 
-    # 修改：LoRA模型保存逻辑
+    # LoRA模型保存
     if model_args.use_lora or model_args.use_q_lora:
         # 保存LoRA权重
         model.save_pretrained(training_args.output_dir)
